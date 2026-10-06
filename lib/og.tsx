@@ -51,3 +51,37 @@ export function OgFrame({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+// A row of position plates, "CF | Cobb", used on lineup images.
+export function OgLineupPlates({
+  starters,
+}: {
+  starters: { position: string; lastName: string; primary: string; secondary: string; text: string }[];
+}) {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: "auto" }}>
+      {starters.map((player) => (
+        <div
+          key={player.position}
+          style={{ display: "flex", fontFamily: "Big Shoulders", fontSize: 28, borderRadius: 4, overflow: "hidden" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "0 10px",
+              background: player.primary,
+              color: player.text,
+              borderBottom: `5px solid ${player.secondary}`,
+            }}
+          >
+            {player.position}
+          </div>
+          <div style={{ display: "flex", padding: "5px 13px", background: OG_COLORS.chalk, color: OG_COLORS.ink }}>
+            {player.lastName}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

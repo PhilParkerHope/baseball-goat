@@ -11,6 +11,6 @@ const globalForDb = globalThis as unknown as { sql?: ReturnType<typeof postgres>
 // In dev, hot reload re-runs this file on every save. Keeping the client on
 // globalThis stops that from opening a new pool each time.
 export const sql =
-  globalForDb.sql ?? postgres(process.env.DATABASE_URL!, { prepare: false, max: 5 });
+  globalForDb.sql ?? postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 
 if (process.env.NODE_ENV !== "production") globalForDb.sql = sql;

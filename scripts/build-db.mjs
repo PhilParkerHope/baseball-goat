@@ -143,6 +143,9 @@ try {
       console.log('Building team lists...')
    await sql.file(path.join(dbDir, '07_compute_player_teams.sql'))
 
+      console.log('Building team lineups...')
+   await sql.file(path.join(dbDir, '08_compute_franchise_players.sql'))
+
   const [{ count }] = await sql`select count(*) from public.player_batting_seasons`
   console.log(`Done. ${count} player-seasons.`)
 } finally {

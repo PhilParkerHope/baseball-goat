@@ -116,6 +116,12 @@ export default async function Home() {
               Each player&rsquo;s score comes from our own numbers, built so a star from 1910 and
               a star from 2010 can be measured side by side.
             </p>
+            <p>
+              <Link href="/lineups" className="font-bold underline underline-offset-4 hover:decoration-2">
+                See any team&rsquo;s all-time lineup
+              </Link>
+              , from the Yankees to the Diamondbacks.
+            </p>
             {/* A div, not a p: the pop-up inside RankingsModal isn't allowed inside a paragraph. */}
             <div>
               <RankingsModal />

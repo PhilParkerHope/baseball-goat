@@ -124,6 +124,23 @@ function PlayerCard({
   // The starter is compared with his runner-up; anyone else with the starter.
   const rival = player.depth === 1 ? depthChart[1] : depthChart[0];
 
+  // On a team lineup page the card shows what he did for that team; on the
+  // home page, his whole career.
+  const forTeam = player.teamWins !== undefined;
+  const stats = forTeam
+    ? [
+        { label: "Wins added here", value: player.teamWins!.toFixed(1) },
+        { label: "Seasons here", value: String(player.teamSeasons) },
+        { label: "Career score", value: player.score.toFixed(1) },
+        { label: "All-time rank", value: String(player.rank) },
+      ]
+    : [
+        { label: "Score", value: player.score.toFixed(1) },
+        { label: "All-time rank", value: String(player.rank) },
+        { label: "Career", value: player.career.toFixed(1) },
+        { label: "Best 7 seasons", value: player.peak7.toFixed(1) },
+      ];
+
   return (
     <article className="overflow-hidden rounded-[4px] bg-chalk text-ink shadow-[0_3px_0_rgba(0,0,0,0.4)]">
       <div
@@ -143,23 +160,23 @@ function PlayerCard({
           <caption className="sr-only">Ratings for {player.name}</caption>
           <thead>
             <tr className="align-bottom text-[13px]">
-              <th scope="col" className="pt-2 pr-3 font-normal">Score</th>
-              <th scope="col" className="pt-2 pr-3 font-normal">All-time rank</th>
-              <th scope="col" className="pt-2 pr-3 font-normal">Career</th>
-              <th scope="col" className="pt-2 font-normal">Best 7 seasons</th>
+              {stats.map((stat) => (
+                <th key={stat.label} scope="col" className="pt-2 pr-3 font-normal last:pr-0">{stat.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             <tr className="font-display text-3xl font-bold tabular-nums">
-              <td className="pr-3 pb-2">{player.score.toFixed(1)}</td>
-              <td className="pr-3 pb-2">{player.rank}</td>
-              <td className="pr-3 pb-2">{player.career.toFixed(1)}</td>
-              <td className="pb-2">{player.peak7.toFixed(1)}</td>
+              {stats.map((stat) => (
+                <td key={stat.label} className="pr-3 pb-2 last:pr-0">{stat.value}</td>
+              ))}
             </tr>
           </tbody>
         </table>
         <p className="mt-2 text-[13px] leading-snug text-ink/75">
-          Career and best seven seasons are in wins, adjusted for era. Score is the average of the two.
+          {forTeam
+            ? "Ranked by wins added while playing for this franchise, adjusted for era, at the position he played here."
+            : "Career and best seven seasons are in wins, adjusted for era. Score is the average of the two."}
         </p>
 
         <h3 className="font-display mt-6 text-xl font-bold first-letter:uppercase">
@@ -189,10 +206,11 @@ function PlayerCard({
                   />
                   <span className="font-semibold">{p.name}</span>
                   <span className={`hidden truncate text-sm sm:inline ${current ? "text-chalk/80" : "text-ink/70"}`}>
-                    {p.teamName}
+                    {/* Everyone on a team page has the same team, so show his years there. */}
+                    {p.teamWins !== undefined ? `${p.firstYear}–${p.lastYear}` : p.teamName}
                   </span>
                   <span className="font-display ml-auto text-lg font-bold tabular-nums">
-                    {p.score.toFixed(1)}
+                    {(p.teamWins ?? p.score).toFixed(1)}
                   </span>
                 </button>
               </li>

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/", label: "Lineup" },
   { href: "/compare", label: "Compare" },
   { href: "/goats", label: "GOATs" },
+     { href: "/lineups", label: "Teams" },
 ];
 
 // The nav with the current page highlighted. Kept separate from SiteNav so the

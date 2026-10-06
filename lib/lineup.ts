@@ -20,6 +20,10 @@ export type LineupPlayer = {
   rank: number; // all-time, across every position
   career: number;
   peak7: number;
+  // Only on team lineup pages (lib/team-lineups.ts): what he did for that
+  // franchise. There, firstYear/lastYear are his years with the franchise too.
+  teamWins?: number;
+  teamSeasons?: number;
 };
 
 export type Lineup = Record<Position, LineupPlayer[]>;
