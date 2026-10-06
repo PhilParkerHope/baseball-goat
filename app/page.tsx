@@ -1,69 +1,65 @@
-import Image from "next/image";
+import { LineupField } from "./components/lineup-field";
+import { getLineup } from "@/lib/lineup";
 
-export default function Home() {
+export default async function Home() {
+  const lineup = await getLineup();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main>
+      <div className="bg-board text-chalk">
+        <div className="mx-auto max-w-[1280px] px-4 pt-5 pb-10 sm:px-8 lg:pb-14">
+          <header>
+            <p className="font-display text-2xl font-extrabold text-signal">Baseball GOAT</p>
+          </header>
+
+          {/* Phone: headline, intro, field, card. Desktop: headline over the field on the
+              left, intro over the card on the right. */}
+          <div className="mt-6 grid gap-x-12 gap-y-6 lg:mt-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-y-8">
+            <h1 className="font-display text-6xl leading-[0.92] font-extrabold sm:text-7xl lg:col-start-1 lg:row-start-1 lg:self-end">
+              Who was actually better?
+            </h1>
+            <p className="max-w-[46ch] text-lg leading-relaxed text-chalk/90 lg:col-start-2 lg:row-start-1 lg:self-end">
+              Every major league player since 1871, rated against his own league and season, so
+              Honus Wagner and Shohei Ohtani can share a field. This is the all-time lineup: the
+              top-rated player at each position. Select a player to see his numbers and who is
+              next in line.
+            </p>
+
+            <LineupField lineup={lineup} />
+          </div>
+        </div>
+      </div>
+
+      <section className="mx-auto max-w-[1280px] px-4 py-14 sm:px-8">
+        <h2 className="font-display text-4xl font-extrabold">How the ratings work</h2>
+        <div className="mt-5 max-w-[66ch] space-y-4 text-lg leading-relaxed">
+          <p>
+            Every player is measured against his own league in his own season. Hitting .350 in
+            1930, when the whole league hit .300, counts for less than hitting .350 in 1968.
+          </p>
+          <p>
+            Hitting, baserunning, position and pitching are each turned into wins above what a
+            replacement-level player would have provided. Short seasons, from the 1870s to the
+            Negro Leagues to 2020, are scaled part of the way up to a full schedule, and
+            600-inning pitching seasons are scaled down.
+          </p>
+          <p>
+            A player&rsquo;s score is the average of his career total and his seven best seasons,
+            so a long career and a great peak both count.
+          </p>
+          <p>
+            The ratings don&rsquo;t yet measure fielding skill, and closers get no extra credit for
+            high-pressure innings.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      <footer className="border-t-2 border-ink">
+        <p className="mx-auto max-w-[1280px] px-4 py-6 text-sm leading-relaxed sm:px-8">
+          Statistics from the SABR Lahman Baseball Database, used under CC BY-SA 3.0. Negro
+          Leagues statistics from Seamheads.com. Not affiliated with Major League Baseball.
+        </p>
+      </footer>
+    </main>
   );
 }
