@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GoatFilters, type CurrentFilters } from "../components/goat-filters";
 import { getGoats, getTeams, MIN_SEASONS, teamLabel, type GoatRow, type TeamOption } from "@/lib/goats";
+import { goatsUrl } from "@/lib/goats-url";
 import { POSITIONS, type Position } from "@/lib/lineup";
 import { POSITION_LABELS, POSITION_PLURALS } from "@/lib/positions";
+import { pageMetadata } from "@/lib/site";
 import { teamColors } from "@/lib/team-colors";
 
 type Props = PageProps<"/goats">;
@@ -37,10 +39,16 @@ function heading(team: TeamOption | null, position: Position | null, activeOnly:
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { team, current } = await readFilters(searchParams);
-  return {
-    title: `${heading(team, current.position, current.activeOnly, 100)} | Baseball GOAT`,
-    description: "Filter the all-time rankings by team and position.",
-  };
+  const rows = await getGoats(current);
+  // Name the top of the list, so a search result shows what's on the page.
+  const leaders = rows.slice(0, 3).map((row) => row.name);
+  const lead =
+    leaders.length === 3 ? `${leaders[0]}, ${leaders[1]} and ${leaders[2]} lead the list. ` : "";
+  return pageMetadata({
+    title: heading(team, current.position, current.activeOnly, rows.length),
+    description: `${lead}Ranked by career value, adjusted for era. Filter by team and position.`,
+    path: goatsUrl(current),
+  });
 }
 
 export default function GoatsPage({ searchParams }: Props) {
@@ -81,7 +89,7 @@ async function Goats({ searchParams }: Pick<Props, "searchParams">) {
           <div className="mt-8 max-w-[900px]">
             <GoatFilters
               teams={teams.map((t) => ({
-                slug: t.slug, franchId: t.franchId, label: teamLabel(t), lastYear: t.lastYear, seasons: t.seasons,
+                slug: t.slug, kind: t.kind, franchId: t.franchId, label: teamLabel(t), lastYear: t.lastYear, seasons: t.seasons,
               }))}
               current={current}
               minSeasons={MIN_SEASONS}
@@ -107,6 +115,7 @@ async function Goats({ searchParams }: Pick<Props, "searchParams">) {
                 place={i + 1}
                 // Everyone is compared with the top of the list; the top with No. 2.
                 rival={i === 0 ? rows[1] : rows[0]}
+                team={team}
                 showAllTimeRank={!unfiltered}
               />
             ))}
@@ -121,11 +130,13 @@ function GoatListItem({
   row,
   place,
   rival,
+  team,
   showAllTimeRank,
 }: {
   row: GoatRow;
   place: number;
   rival: GoatRow | undefined;
+  team: TeamOption | null; // the team the list is filtered to, if any
   showAllTimeRank: boolean;
 }) {
   const years = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
@@ -143,15 +154,18 @@ function GoatListItem({
           />
           {row.name}
         </p>
+        {/* Position and career years. His main team is only shown when the list
+            isn't about one team; otherwise it reads as a second, confusing team. */}
         <p className="text-sm text-ink/75 first-letter:uppercase sm:text-base">
-          {[row.position && POSITION_LABELS[row.position], row.teamName, years(row.firstYear, row.lastYear)]
+          {[row.position && POSITION_LABELS[row.position], !team && row.teamName, years(row.firstYear, row.lastYear)]
             .filter(Boolean)
             .join(", ")}
         </p>
-        {row.teamSeasons !== null && row.teamFirstYear !== null && row.teamLastYear !== null && (
+        {team && row.teamSeasons !== null && row.teamFirstYear !== null && row.teamLastYear !== null && (
           <p className="text-sm text-ink/75 sm:text-base">
-            {row.teamSeasons} {row.teamSeasons === 1 ? "season" : "seasons"} here,{" "}
-            {years(row.teamFirstYear, row.teamLastYear)}, {row.teamGames?.toLocaleString("en-US")} games
+            {row.teamSeasons} {row.teamSeasons === 1 ? "season" : "seasons"} on the {team.name}
+            {team.kind === "franchise" && " franchise"}, {years(row.teamFirstYear, row.teamLastYear)},{" "}
+            {row.teamGames?.toLocaleString("en-US")} {row.teamGames === 1 ? "game" : "games"}
           </p>
         )}
         {rival && (

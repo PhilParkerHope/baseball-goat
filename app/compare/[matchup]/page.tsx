@@ -5,6 +5,7 @@ import { displayNames, getStatSections, getVerdict, type StatRow } from "@/lib/c
 import { getLineup, POSITIONS } from "@/lib/lineup";
 import { getPlayerProfile, type PlayerProfile, type PlayerSummary } from "@/lib/players";
 import { isPitcher, POSITION_LABELS } from "@/lib/positions";
+import { pageMetadata } from "@/lib/site";
 import { teamColors } from "@/lib/team-colors";
 
 type Props = PageProps<"/compare/[matchup]">;
@@ -29,15 +30,23 @@ async function loadMatchup(matchup: string): Promise<[PlayerProfile, PlayerProfi
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { matchup } = await params;
   const players = await loadMatchup(matchup);
-  if (!players) return { title: "Matchup not found | Baseball GOAT" };
+  // Unknown or same-player matchups shouldn't show up in search results.
+  if (!players || players[0].slug === players[1].slug) {
+    return { title: "Matchup not found", robots: { index: false } };
+  }
 
   const [a, b] = players;
   const verdict = getVerdict(a, b);
   const [nameA, nameB] = displayNames(a, b);
-  return {
-    title: `${nameA} vs. ${nameB} | Baseball GOAT`,
+  // Both orders of a matchup work; this tells search engines they're one page.
+  const canonical = `/compare/${[a.slug, b.slug].sort().join("-vs-")}`;
+  return pageMetadata({
+    title: `${nameA} vs. ${nameB}: who was better?`,
     description: `${verdict.headline}. ${verdict.summary}`,
-  };
+    path: canonical,
+    // The picture shown when the link is shared: see opengraph-image.tsx in this folder.
+    image: `/compare/${matchup}/opengraph-image`,
+  });
 }
 
 export default function MatchupPage({ params }: Props) {

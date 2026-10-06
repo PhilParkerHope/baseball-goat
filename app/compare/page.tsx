@@ -3,11 +3,14 @@ import Link from "next/link";
 import { PlayerPicker } from "../components/player-picker";
 import { getLineup, POSITIONS } from "@/lib/lineup";
 import { POSITION_LABELS } from "@/lib/positions";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Compare two players | Baseball GOAT",
-  description: "Pick any two major league players since 1871 and see who rates higher, and why.",
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Compare any two baseball players",
+  description:
+    "Pick any two players since 1871, from any era, hitters or pitchers, and see who rates higher and why.",
+  path: "/compare",
+});
 
 export default async function ComparePage() {
   // Ready-made matchups: the top two at each position, straight from the lineup.

@@ -1,37 +1,30 @@
+import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { CurrentPageNav, SiteNav } from "./site-nav";
+import { SITE_NAME } from "@/lib/site";
 
-// Shown on every page (added in app/layout.tsx). Add a link here as each new
-// page is built.
-const NAV = [
-  { href: "/", label: "Lineup" },
-  { href: "/compare", label: "Compare" },
-  { href: "/goats", label: "GOATs" },
-];
-
+// Shown on every page (added in app/layout.tsx). The links themselves, and
+// the phone menu, are in site-nav.tsx.
 export function SiteHeader() {
   return (
     <header className="bg-board text-chalk">
-      <div className="mx-auto flex max-w-[1280px] flex-wrap items-baseline justify-between gap-x-8 gap-y-1 px-4 pt-5 sm:px-8">
+      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-8 px-4 py-3 sm:px-8">
         <Link
           href="/"
-          className="font-display text-2xl font-extrabold text-signal outline-offset-4 focus-visible:outline-3 focus-visible:outline-white"
+          className="font-display flex items-center gap-3 text-2xl font-extrabold text-signal outline-offset-4 focus-visible:outline-3 focus-visible:outline-white"
         >
-          Baseball GOAT
+          {/* Empty alt: the site name beside it already says what this is. */}
+          <Image src="/icon.png" width={44} height={44} alt="" priority />
+          {SITE_NAME}
         </Link>
-        <nav aria-label="Main">
-          <ul className="flex gap-6">
-            {NAV.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="font-display text-xl font-bold underline-offset-4 outline-offset-4 hover:underline focus-visible:outline-3 focus-visible:outline-white"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+
+        {/* Highlighting the current page means reading the address, which isn't
+            known while a not-yet-visited matchup page is being prepared. Until
+            it is, the same nav shows with nothing highlighted. */}
+        <Suspense fallback={<SiteNav pathname={null} />}>
+          <CurrentPageNav />
+        </Suspense>
       </div>
     </header>
   );

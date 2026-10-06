@@ -4,31 +4,18 @@ import { useId, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 // Types and plain helpers only: nothing here may import the database client.
 import type { Position } from "@/lib/lineup";
+import { goatsUrl, type GoatUrlFilters } from "@/lib/goats-url";
 import { POSITION_LABELS } from "@/lib/positions";
+import { searchTeams, type SearchableTeam } from "@/lib/team-search";
 import { teamColors } from "@/lib/team-colors";
 
-// Mirrors TeamOption in lib/goats.ts, plus the label the server already built.
-export type TeamChoice = { slug: string; franchId: string; label: string; lastYear: number; seasons: number };
+// A team as the search box sees it: TeamOption from lib/goats.ts, with the
+// label ("Washington Senators (1901–1960)") already built by the server.
+export type TeamChoice = SearchableTeam;
 
-export type CurrentFilters = {
-  team: string | null;
-  position: Position | null;
-  activeOnly: boolean;
-  includeShortStays: boolean;
-};
+export type CurrentFilters = GoatUrlFilters;
 
 const POSITION_ORDER = Object.keys(POSITION_LABELS) as Position[];
-
-// The filters live in the URL, so a filtered list can be shared or bookmarked.
-function goatsUrl(filters: CurrentFilters): string {
-  const query = new URLSearchParams();
-  if (filters.team) query.set("team", filters.team);
-  if (filters.position) query.set("position", filters.position);
-  if (filters.activeOnly) query.set("active", "1");
-  if (filters.team && filters.includeShortStays) query.set("all", "1");
-  const text = query.toString();
-  return text ? `/goats?${text}` : "/goats";
-}
 
 export function GoatFilters({
   teams,
@@ -113,11 +100,9 @@ export function GoatFilters({
   );
 }
 
-const normalize = (text: string) =>
-  text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ");
-
 // Team search box. The full team list is already in the page, so matching
-// happens right here with no server round trip.
+// happens right here with no server round trip. The matching itself, which
+// forgives typos, nicknames and initials, is in lib/team-search.ts.
 function TeamSearch({
   teams,
   selected,
@@ -141,12 +126,10 @@ function TeamSearch({
     setText(selected?.label ?? "");
   }
 
-  // Every word typed has to appear somewhere in the team's label.
-  const words = normalize(text).split(" ").filter(Boolean);
-  const matches =
-    words.length === 0 || text === selected?.label
-      ? []
-      : teams.filter((team) => words.every((word) => normalize(team.label).includes(word))).slice(0, 10);
+  // An empty box lists today's teams; anything typed is searched. While the
+  // box still shows the selected team's own label there is nothing to offer.
+  const typed = text.trim();
+  const matches = text === selected?.label ? [] : searchTeams(teams, typed);
 
   function choose(team: TeamChoice) {
     setText(team.label);
@@ -163,12 +146,13 @@ function TeamSearch({
 
   function handleKey(event: React.KeyboardEvent<HTMLInputElement>) {
     if (!open || matches.length === 0) return;
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      setActive((i) => (i + 1) % matches.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActive((i) => (i - 1 + matches.length) % matches.length);
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      const next = (active + step + matches.length) % matches.length;
+      setActive(next);
+      // The list of today's teams is long enough to scroll; keep up with the arrow keys.
+      document.getElementById(`${id}-${next}`)?.scrollIntoView({ block: "nearest" });
     } else if (event.key === "Enter") {
       event.preventDefault();
       choose(matches[active]);
@@ -179,7 +163,7 @@ function TeamSearch({
 
   const listId = `${id}-list`;
   const showList = open && matches.length > 0;
-  const noMatch = open && words.length > 0 && matches.length === 0 && text !== selected?.label;
+  const noMatch = open && typed !== "" && matches.length === 0 && text !== selected?.label;
 
   return (
     <div className="relative">
@@ -196,10 +180,20 @@ function TeamSearch({
         aria-activedescendant={showList ? `${id}-${active}` : undefined}
         autoComplete="off"
         spellCheck={false}
-        placeholder="Any team. Type a name to pick one"
+        placeholder="Any team. Type a name, city or nickname"
         value={text}
         onChange={(event) => handleType(event.target.value)}
         onKeyDown={handleKey}
+        onFocus={(event) => {
+          // Select what's there so typing replaces it, and open the list.
+          event.target.select();
+          setActive(0);
+          setOpen(true);
+        }}
+        // A mouse click undoes the selection made on focus, so make it again.
+        onClick={(event) => {
+          if (text === selected?.label) event.currentTarget.select();
+        }}
         onBlur={() => {
           // Leaving without picking puts back whatever is actually selected.
           setOpen(false);
@@ -214,7 +208,7 @@ function TeamSearch({
         role="listbox"
         aria-label="Teams"
         hidden={!showList}
-        className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-[3px] bg-chalk text-ink shadow-[0_3px_0_rgba(0,0,0,0.4)]"
+        className="absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-y-auto rounded-[3px] bg-chalk text-ink shadow-[0_3px_0_rgba(0,0,0,0.4)]"
       >
         {matches.map((team, i) => (
           <li
@@ -245,7 +239,7 @@ function TeamSearch({
 
       {noMatch && (
         <p role="status" className="absolute inset-x-0 top-full z-20 mt-1 rounded-[3px] bg-chalk px-3 py-2 text-sm text-ink shadow-[0_3px_0_rgba(0,0,0,0.4)]">
-          No team by that name. Try a city or a nickname.
+          No team like that. Try a city or a nickname.
         </p>
       )}
     </div>

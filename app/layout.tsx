@@ -4,6 +4,7 @@ import "@fontsource-variable/libre-franklin";
 import "./globals.css";
 import { SiteHeader } from "./components/site-header";
 import { SiteFooter } from "./components/site-footer";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Baseball GOAT",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <Analytics />
         <SiteHeader />
         {children}
         <SiteFooter />

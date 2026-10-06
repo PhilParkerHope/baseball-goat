@@ -20,7 +20,10 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
-
+   html:has(dialog[open]) {
+     overflow: hidden;
+   }
+   
 /* The lineup "takes the field" once, on page load. */
 @media (prefers-reduced-motion: no-preference) {
   .lineup-marker {
