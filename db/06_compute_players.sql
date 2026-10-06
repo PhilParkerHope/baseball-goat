@@ -104,20 +104,33 @@ careers as (
   from ranked_seasons
   group by player_id
 ),
-position_games as (
-  select player_id, pos, sum(g) as g
+-- Primary position = where he earned the most value, not where he played the
+-- most games. Each season's wins are split across the positions he played that
+-- year, by games, and a season below zero counts as zero. Ernie Banks played
+-- more games at first base but earned most of his value at shortstop, so he is
+-- a shortstop. Ties, and players with no value to split, go to games played.
+position_seasons as (
+  select a.player_id, a.year_id, v.pos, sum(v.g) as g,
+         sum(sum(v.g)) over (partition by a.player_id, a.year_id) as season_g
   from lahman.appearances a
   cross join lateral (values
     ('P', a.g_p), ('C', a.g_c), ('1B', a.g_1b), ('2B', a.g_2b), ('3B', a.g_3b), ('SS', a.g_ss),
     ('LF', a.g_lf), ('CF', a.g_cf), ('RF', a.g_rf), ('DH', coalesce(a.g_dh, 0))
   ) as v(pos, g)
-  group by player_id, pos
+  group by a.player_id, a.year_id, v.pos
+),
+position_games as (
+  select ps.player_id, ps.pos, sum(ps.g) as g,
+         sum(greatest(s.adj_wins, 0) * ps.g / nullif(ps.season_g, 0)) as wins
+  from position_seasons ps
+  left join public.player_seasons s using (player_id, year_id)
+  group by ps.player_id, ps.pos
 ),
 primary_position as (
   select distinct on (player_id) player_id, pos
   from position_games
   where g > 0
-  order by player_id, g desc, pos
+  order by player_id, coalesce(wins, 0) desc, g desc, pos
 ),
 -- Pitchers are split into starters and relievers. A reliever started fewer than
 -- one in five of his games; a start is ~6 innings and a relief outing ~1, so

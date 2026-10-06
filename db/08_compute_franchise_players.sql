@@ -9,7 +9,7 @@
 create table if not exists public.franchise_players (
   franch_id   text not null,
   player_id   text not null,
-  position    text,              -- the position he played most FOR THIS FRANCHISE: SP RP C 1B ...
+  position    text,              -- where he earned the most value FOR THIS FRANCHISE: SP RP C 1B ...
   seasons     int  not null,     -- seasons he appeared for them
   games       int  not null,
   first_year  int  not null,
@@ -45,21 +45,32 @@ with time_there as (
   join lahman.teams t using (year_id, team_id)
   group by t.franch_id, a.player_id
 ),
-position_games as (
-  select t.franch_id, a.player_id, v.pos, sum(v.g) as g
+-- Same rule as 06: his position is where he earned the most value, counting
+-- only his time with this franchise. A season's value counts here only if this
+-- was his main team that year (see "value" below). Ties go to games played.
+position_seasons as (
+  select t.franch_id, a.player_id, a.year_id, a.team_id, v.pos, sum(v.g) as g,
+         sum(sum(v.g)) over (partition by t.franch_id, a.player_id, a.year_id) as season_g
   from lahman.appearances a
   join lahman.teams t using (year_id, team_id)
   cross join lateral (values
     ('P', a.g_p), ('C', a.g_c), ('1B', a.g_1b), ('2B', a.g_2b), ('3B', a.g_3b), ('SS', a.g_ss),
     ('LF', a.g_lf), ('CF', a.g_cf), ('RF', a.g_rf), ('DH', coalesce(a.g_dh, 0))
   ) as v(pos, g)
-  group by t.franch_id, a.player_id, v.pos
+  group by t.franch_id, a.player_id, a.year_id, a.team_id, v.pos
+),
+position_games as (
+  select ps.franch_id, ps.player_id, ps.pos, sum(ps.g) as g,
+         sum(greatest(s.adj_wins, 0) * ps.g / nullif(ps.season_g, 0)) as wins
+  from position_seasons ps
+  left join public.player_seasons s using (player_id, year_id, team_id)
+  group by ps.franch_id, ps.player_id, ps.pos
 ),
 main_position as (
   select distinct on (franch_id, player_id) franch_id, player_id, pos
   from position_games
   where g > 0
-  order by franch_id, player_id, g desc, pos
+  order by franch_id, player_id, coalesce(wins, 0) desc, g desc, pos
 ),
 -- Starter or reliever, by the same one-in-five rule as 06, but only counting
 -- his games for this franchise. Babe Ruth is a starting pitcher for Boston.
