@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 // Types only: importing anything else from lib/lineup would pull the database
 // client into the browser bundle.
 import type { Lineup, LineupPlayer, Position } from "@/lib/lineup";
@@ -120,6 +121,8 @@ function PlayerCard({
   onSelect: (depth: number) => void;
 }) {
   const colors = teamColors(player.franchId);
+  // The starter is compared with his runner-up; anyone else with the starter.
+  const rival = player.depth === 1 ? depthChart[1] : depthChart[0];
 
   return (
     <article className="overflow-hidden rounded-[4px] bg-chalk text-ink shadow-[0_3px_0_rgba(0,0,0,0.4)]">
@@ -196,6 +199,15 @@ function PlayerCard({
             );
           })}
         </ol>
+
+        {rival && (
+          <Link
+            href={`/compare/${player.slug}-vs-${rival.slug}`}
+            className="font-display mt-4 inline-block rounded-[3px] bg-signal px-4 py-2 text-lg font-extrabold text-ink shadow-[0_2px_0_rgba(0,0,0,0.4)] outline-offset-2 hover:brightness-105 focus-visible:outline-3 focus-visible:outline-ink"
+          >
+            Compare {player.lastName} and {rival.lastName}
+          </Link>
+        )}
       </div>
     </article>
   );

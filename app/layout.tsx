@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "@fontsource-variable/big-shoulders";
 import "@fontsource-variable/libre-franklin";
 import "./globals.css";
+import { SiteHeader } from "./components/site-header";
+import { SiteFooter } from "./components/site-footer";
 
 export const metadata: Metadata = {
   title: "Baseball GOAT",
@@ -12,7 +14,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

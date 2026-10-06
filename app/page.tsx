@@ -7,11 +7,7 @@ export default async function Home() {
   return (
     <main>
       <div className="bg-board text-chalk">
-        <div className="mx-auto max-w-[1280px] px-4 pt-5 pb-10 sm:px-8 lg:pb-14">
-          <header>
-            <p className="font-display text-2xl font-extrabold text-signal">Baseball GOAT</p>
-          </header>
-
+        <div className="mx-auto max-w-[1280px] px-4 pb-10 sm:px-8 lg:pb-14">
           {/* Phone: headline, intro, field, card. Desktop: headline over the field on the
               left, intro over the card on the right. */}
           <div className="mt-6 grid gap-x-12 gap-y-6 lg:mt-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-y-8">
@@ -54,12 +50,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <footer className="border-t-2 border-ink">
-        <p className="mx-auto max-w-[1280px] px-4 py-6 text-sm leading-relaxed sm:px-8">
-          Statistics from the SABR Lahman Baseball Database, used under CC BY-SA 3.0. Negro
-          Leagues statistics from Seamheads.com. Not affiliated with Major League Baseball.
-        </p>
-      </footer>
+      
     </main>
   );
 }
