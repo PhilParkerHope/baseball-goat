@@ -31,9 +31,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const teamLineups = franchises.map((franchise) => `/lineups/${franchise.slug}`);
 
-  const games = ["/games", "/games/player-of-the-day", "/games/who-was-better"];
+  const extraPages = ["/games", "/games/player-of-the-day", "/games/who-was-better", "/privacy"];
 
-  return ["/", "/compare", "/goats", "/lineups", ...games, ...teamLineups, ...matchups, ...byPosition, ...byTeam].map((path) => ({
+  return ["/", "/compare", "/goats", "/lineups", ...extraPages, ...teamLineups, ...matchups, ...byPosition, ...byTeam].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: DATA_UPDATED,
   }));
