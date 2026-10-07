@@ -8,7 +8,7 @@ import { getFranchises } from "@/lib/team-lineups";
 // The day the rankings were last rebuilt. Every page changes then and only
 // then, so this is the honest "last modified" date. Update it when you re-run
 // scripts/build-db.mjs.
-const DATA_UPDATED = "2026-10-06";
+const DATA_UPDATED = "2026-10-07";
 
 // Tells search engines which pages exist. Every matchup and filter works when
 // visited, but only the ones listed here are offered up for indexing: the
@@ -31,7 +31,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const teamLineups = franchises.map((franchise) => `/lineups/${franchise.slug}`);
 
-  return ["/", "/compare", "/goats", "/lineups", ...teamLineups, ...matchups, ...byPosition, ...byTeam].map((path) => ({
+  const games = ["/games", "/games/player-of-the-day", "/games/who-was-better"];
+
+  return ["/", "/compare", "/goats", "/lineups", ...games, ...teamLineups, ...matchups, ...byPosition, ...byTeam].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: DATA_UPDATED,
   }));

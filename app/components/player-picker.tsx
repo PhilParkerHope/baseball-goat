@@ -43,7 +43,7 @@ export function PlayerPicker({ first, second }: { first?: PlayerSummary; second?
 }
 
 // One search box with a dropdown of matching players.
-function PlayerSearch({
+export function PlayerSearch({
   label,
   selected,
   onSelect,

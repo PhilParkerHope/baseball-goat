@@ -73,6 +73,39 @@ create table if not exists lahman.appearances (
   primary key (player_id, year_id, team_id)
 );
 
+-- Awards, All-Star Games and Hall of Fame voting. Not part of the value
+-- numbers; they pick the player pool and the clues for the games.
+create table if not exists lahman.awards_players (
+  player_id text not null,
+  award_id  text not null,   -- 'Most Valuable Player', 'Cy Young Award', 'Gold Glove', ...
+  year_id   int  not null,
+  lg_id     text,
+  tie       text,            -- 'Y' when the award was shared
+  notes     text             -- position, for Gold Gloves and Silver Sluggers
+);
+create index if not exists awards_players_player_idx on lahman.awards_players (player_id);
+
+-- One row per player per game. 1959-62 had two games a year, and the Negro
+-- Leagues' East-West games are in here too. Only the columns we use: the
+-- file's other columns are messy (a starting position of "9;9", for one).
+create table if not exists lahman.allstar_full (
+  player_id text not null,
+  year_id   int  not null,
+  team_id   text,
+  lg_id     text
+);
+create index if not exists allstar_full_player_idx on lahman.allstar_full (player_id);
+
+-- One row per player per ballot, so most rows are years he fell short.
+create table if not exists lahman.hall_of_fame (
+  player_id text not null,
+  year_id   int  not null,
+  voted_by  text,
+  inducted  text,            -- 'Y' or 'N'
+  category  text             -- 'Player', 'Manager', 'Executive', ...
+);
+create index if not exists hall_of_fame_player_idx on lahman.hall_of_fame (player_id);
+
 -- Which league-year a player is measured against.
 -- AL/NL and the other historical majors stand alone. Negro Leagues and
 -- independent Black clubs are pooled per year: several of those league-years

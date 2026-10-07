@@ -67,6 +67,26 @@ const TABLES = {
       g_rf: 'G_rf', g_of: 'G_of', g_dh: 'G_dh', g_ph: 'G_ph', g_pr: 'G_pr',
     },
   },
+  awards_players: {
+    file: 'AwardsPlayers.csv',
+    columns: {
+      player_id: 'playerID', award_id: 'awardID', year_id: 'yearID', lg_id: 'lgID',
+      tie: 'tie', notes: 'notes',
+    },
+  },
+  allstar_full: {
+    file: 'AllstarFull.csv',
+    columns: {
+      player_id: 'playerID', year_id: 'yearID', team_id: 'teamID', lg_id: 'lgID',
+    },
+  },
+  hall_of_fame: {
+    file: 'HallOfFame.csv',
+    columns: {
+      player_id: 'playerID', year_id: 'yearID', voted_by: 'votedBy',
+      inducted: 'inducted', category: 'category',
+    },
+  },
 }
 
 async function readHeader(file) {
@@ -131,20 +151,23 @@ try {
   console.log('Computing batting runs...')
   await sql.file(path.join(dbDir, '03_compute_batting_runs.sql'))
 
-     console.log('Computing hitter value...')
-   await sql.file(path.join(dbDir, '04_compute_hitter_value.sql'))
+  console.log('Computing hitter value...')
+  await sql.file(path.join(dbDir, '04_compute_hitter_value.sql'))
 
-      console.log('Computing pitcher value...')
-   await sql.file(path.join(dbDir, '05_compute_pitcher_value.sql'))
+  console.log('Computing pitcher value...')
+  await sql.file(path.join(dbDir, '05_compute_pitcher_value.sql'))
 
-      console.log('Building players...')
-   await sql.file(path.join(dbDir, '06_compute_players.sql'))
+  console.log('Building players...')
+  await sql.file(path.join(dbDir, '06_compute_players.sql'))
 
-      console.log('Building team lists...')
-   await sql.file(path.join(dbDir, '07_compute_player_teams.sql'))
+  console.log('Building team lists...')
+  await sql.file(path.join(dbDir, '07_compute_player_teams.sql'))
 
-      console.log('Building team lineups...')
-   await sql.file(path.join(dbDir, '08_compute_franchise_players.sql'))
+  console.log('Building team lineups...')
+  await sql.file(path.join(dbDir, '08_compute_franchise_players.sql'))
+
+  console.log('Counting honors...')
+  await sql.file(path.join(dbDir, '09_compute_honors.sql'))
 
   const [{ count }] = await sql`select count(*) from public.player_batting_seasons`
   console.log(`Done. ${count} player-seasons.`)
