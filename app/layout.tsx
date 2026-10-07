@@ -6,6 +6,7 @@ import { SiteHeader } from "./components/site-header";
 import { SiteFooter } from "./components/site-footer";
 import { Analytics } from "@vercel/analytics/next"
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -21,6 +22,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <Analytics />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-BZGQ98RBNV" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BZGQ98RBNV');
+          `}
+        </Script>
         <SiteHeader />
         {children}
         <SiteFooter />
